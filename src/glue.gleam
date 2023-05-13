@@ -1,5 +1,5 @@
+import glue/code
 import glance
-import gleam/int
 import gleam/list
 import gleam/string
 import gleam/result
@@ -41,24 +41,39 @@ pub fn generate_list_variants(
 pub fn generate_compare(src: String, type_name: String) -> Result(String, Error) {
   use module <- result.try(parse(src))
   use custom_type <- result.try(find_custom_type(module, type_name))
-  use names <- result.try(enum_variants(custom_type))
+  use names <- result.map(enum_variants(custom_type))
 
-  let add = fn(gen, name, i) {
-    gen <> "\n      " <> name <> " -> " <> int.to_string(i)
+  let clause = fn(i, name) {
+    code.Clause(code.Constructor(name, []), code.Int(i))
   }
 
-  let gen = "pub fn compare_" <> snake_case(type_name)
-  let gen = gen <> "(a: " <> type_name <> ", b: " <> type_name <> ")"
-  let gen = gen <> " -> Order {\n"
-  let gen = gen <> "  let to_int = fn(x) {\n"
-  let gen = gen <> "    case x {"
-  let gen = list.index_fold(names, gen, add) <> "\n"
-  let gen = gen <> "    }\n"
-  let gen = gen <> "  }\n"
-  let gen = gen <> "  int.compare(to_int(a), to_int(b))\n"
-  let gen = gen <> "}\n"
-
-  Ok(gen)
+  code.Function(
+    name: "compare_" <> snake_case(type_name),
+    parameters: [#("a", type_name), #("b", type_name)],
+    return: "Order",
+    body: [
+      code.Let(
+        "to_int",
+        code.Fn(
+          ["x"],
+          [
+            code.Expression(code.Case(
+              code.Variable("x"),
+              list.index_map(names, clause),
+            )),
+          ],
+        ),
+      ),
+      code.Expression(code.Call(
+        code.Variable("int.compare"),
+        [
+          code.Call(code.Variable("to_int"), [code.Variable("a")]),
+          code.Call(code.Variable("to_int"), [code.Variable("b")]),
+        ],
+      )),
+    ],
+  )
+  |> code.function_to_string
 }
 
 // Get the names of the variants of a custom type, returning an error if any of
