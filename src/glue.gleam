@@ -1,4 +1,4 @@
-import glue/code
+import glue/internal/code
 import glance
 import gleam/list
 import gleam/string
@@ -23,12 +23,15 @@ pub fn generate_list_variants(
 ) -> Result(String, Error) {
   use module <- result.try(parse(src))
   use custom_type <- result.try(find_custom_type(module, type_name))
-  use names <- result.try(enum_variants(custom_type))
-  let header =
-    "pub fn " <> snake_case(type_name) <> "_list() -> List(" <> type_name <> ") {\n"
-  let body = "  [" <> string.join(names, ", ") <> "]\n"
-  let end = "}\n"
-  Ok(header <> body <> end)
+  use names <- result.map(enum_variants(custom_type))
+
+  code.Function(
+    name: snake_case(type_name) <> "_list",
+    parameters: [],
+    return: "List(" <> type_name <> ")",
+    body: [code.Expression(code.List(list.map(names, code.Variable)))],
+  )
+  |> code.function_to_string
 }
 
 /// Generate a function that lists all the variants of a given custom type.
