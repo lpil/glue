@@ -22,6 +22,7 @@ pub type Expression {
   Int(Int)
   Call(function: Expression, arguments: List(Expression))
   Case(Expression, List(Clause))
+  List(List(Expression))
 }
 
 pub type Clause {
@@ -192,7 +193,15 @@ fn write_expression(gen: Generator, expression: Expression) -> Generator {
     Fn(parameters, body) -> write_fn(gen, parameters, body)
     Call(function, arguments) -> write_call(gen, function, arguments)
     Case(expression, clauses) -> write_case(gen, expression, clauses)
+    List(expressions) -> write_list(gen, expressions)
   }
+}
+
+fn write_list(gen: Generator, expressions: List(Expression)) -> Generator {
+  gen
+  |> write("[")
+  |> list.index_fold(expressions, _, write_argument)
+  |> write("]")
 }
 
 fn write_parameters(
