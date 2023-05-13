@@ -7,6 +7,38 @@ A package for generating functions from your Gleam code!
 
 ## Generators
 
+- [compare](#compare)
+- [list_variants](#list_variants)
+
+### compare
+
+Given a module containing this type:
+
+```gleam
+pub type Direction {
+  Debug
+  Info
+  Warn
+  Error
+}
+```
+
+This generator will generate the following function:
+
+```gleam
+pub fn compare_direction(a: Direction, b: Direction) -> Order {
+  let to_int = fn(x) {
+    case x {
+      Debug -> 0
+      Info -> 1
+      Warn -> 2
+      Error -> 3
+    }
+  }
+  int.compare(to_int(a), to_int(b))
+}
+```
+
 ### list_variants
 
 Given a module containing this type:
@@ -28,34 +60,6 @@ pub fn direction_list() -> List(Direction) {
 }
 ```
 
-### compare
-
-Given a module containing this type:
-
-```gleam
-pub type Direction {
-  North
-  East
-  South
-  West
-}
-```
-
-This generator will generate the following function:
-
-```gleam
-pub fn compare_direction(a: Direction, b: Direction) -> Order {
-  let to_int = fn(x) {
-    case x {
-      North -> 0
-      East -> 1
-      South -> 2
-      West -> 3
-    }
-  }
-  int.compare(to_int(a), to_int(b))
-}
-```
 
 ## Installation
 
