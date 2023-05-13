@@ -56,6 +56,32 @@ pub fn list_variants_not_enum_test() {
     Other(String)
   }
   "
-  |> glue.generate_list_variants("Wibble")
+  |> glue.generate_list_variants("CardinalDirection")
   |> should.be_error
+}
+
+pub fn compare_test() {
+  "
+  pub type CardinalDirection {
+    North
+    East
+    South
+    West
+  }
+  "
+  |> glue.generate_compare("CardinalDirection")
+  |> should.equal(Ok(
+    "pub fn compare_cardinal_direction(a: CardinalDirection, b: CardinalDirection) -> Order {
+  let to_int = fn(x) {
+    case x {
+      North -> 0
+      East -> 1
+      South -> 2
+      West -> 3
+    }
+  }
+  int.compare(to_int(a), to_int(b))
+}
+",
+  ))
 }

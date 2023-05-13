@@ -1,4 +1,5 @@
 import glance
+import gleam/int
 import gleam/list
 import gleam/string
 import gleam/result
@@ -9,6 +10,13 @@ pub type Error {
   TypeIsNotEnum(type_name: String, variant: String)
 }
 
+/// Generate a function that lists all the variants of a given custom type.
+///
+/// Errors if: 
+/// - The source is invalid.
+/// - If type cannot be found.
+/// - If the type has variants that are records and as such cannot be listed
+///   without being given arguments.
 pub fn generate_list_variants(
   src: String,
   type_name: String,
@@ -21,6 +29,36 @@ pub fn generate_list_variants(
   let body = "  [" <> string.join(names, ", ") <> "]\n"
   let end = "}\n"
   Ok(header <> body <> end)
+}
+
+/// Generate a function that lists all the variants of a given custom type.
+///
+/// Errors if: 
+/// - The source is invalid.
+/// - If type cannot be found.
+/// - If the type has variants that are records and as such cannot be listed
+///   without being given arguments.
+pub fn generate_compare(src: String, type_name: String) -> Result(String, Error) {
+  use module <- result.try(parse(src))
+  use custom_type <- result.try(find_custom_type(module, type_name))
+  use names <- result.try(enum_variants(custom_type))
+
+  let add = fn(gen, name, i) {
+    gen <> "\n      " <> name <> " -> " <> int.to_string(i)
+  }
+
+  let gen = "pub fn compare_" <> snake_case(type_name)
+  let gen = gen <> "(a: " <> type_name <> ", b: " <> type_name <> ")"
+  let gen = gen <> " -> Order {\n"
+  let gen = gen <> "  let to_int = fn(x) {\n"
+  let gen = gen <> "    case x {"
+  let gen = list.index_fold(names, gen, add) <> "\n"
+  let gen = gen <> "    }\n"
+  let gen = gen <> "  }\n"
+  let gen = gen <> "  int.compare(to_int(a), to_int(b))\n"
+  let gen = gen <> "}\n"
+
+  Ok(gen)
 }
 
 // Get the names of the variants of a custom type, returning an error if any of
