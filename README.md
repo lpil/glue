@@ -15,7 +15,7 @@ A package for generating functions from your Gleam code!
 Given a module containing this type:
 
 ```gleam
-pub type Direction {
+pub type LogLevel {
   Debug
   Info
   Warn
@@ -26,7 +26,7 @@ pub type Direction {
 This generator will generate the following function:
 
 ```gleam
-pub fn compare_direction(a: Direction, b: Direction) -> Order {
+pub fn compare_log_level(a: LogLevel, b: LogLevel) -> Order {
   let to_int = fn(x) {
     case x {
       Debug -> 0
