@@ -11,7 +11,7 @@ links = [
 
 [dependencies]
 gleam_stdlib = "~> 0.28"
-glance = "~> 0.1"
+glance = "~> 0.8"
 
 [dev-dependencies]
-gleeunit = "~> 0.10"
+gleeunit = "~> 1.0"

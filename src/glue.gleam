@@ -101,7 +101,8 @@ fn find_custom_type(
   type_name: String,
 ) -> Result(glance.CustomType, Error) {
   module.custom_types
-  |> list.find(fn(t) { t.name == type_name })
+  |> list.find(fn(t) { t.definition.name == type_name })
+  |> result.map(fn(t) { t.definition })
   |> result.replace_error(TypeNotFound(type_name))
 }
 
