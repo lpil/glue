@@ -1,6 +1,6 @@
-import glue
 import gleeunit
 import gleeunit/should
+import glue
 
 pub fn main() {
   gleeunit.main()

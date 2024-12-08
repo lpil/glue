@@ -52,16 +52,12 @@ pub fn function_to_string(function: Function) -> String {
 }
 
 fn write_statements(gen: Generator, statements: List(Statement)) -> Generator {
-  list.fold(
-    statements,
-    gen,
-    fn(gen, statement) {
-      gen
-      |> indent
-      |> write_statement(statement)
-      |> newline
-    },
-  )
+  list.fold(statements, gen, fn(gen, statement) {
+    gen
+    |> indent
+    |> write_statement(statement)
+    |> newline
+  })
 }
 
 fn write_statement(gen: Generator, statement: Statement) -> Generator {
@@ -209,18 +205,15 @@ fn write_parameters(
   parameters: List(#(String, String)),
 ) -> Generator {
   parameters
-  |> list.index_fold(
-    gen,
-    fn(gen, parameters, i) {
-      case i {
-        0 -> gen
-        _ -> write(gen, ", ")
-      }
-      |> write(parameters.0)
-      |> write(": ")
-      |> write(parameters.1)
-    },
-  )
+  |> list.index_fold(gen, fn(gen, parameters, i) {
+    case i {
+      0 -> gen
+      _ -> write(gen, ", ")
+    }
+    |> write(parameters.0)
+    |> write(": ")
+    |> write(parameters.1)
+  })
 }
 
 type Generator {

@@ -1,8 +1,8 @@
-import glue/internal/code
 import glance
 import gleam/list
-import gleam/string
 import gleam/result
+import gleam/string
+import glue/internal/code
 
 pub type Error {
   ParseError(glance.Error)
@@ -46,7 +46,7 @@ pub fn generate_compare(src: String, type_name: String) -> Result(String, Error)
   use custom_type <- result.try(find_custom_type(module, type_name))
   use names <- result.map(enum_variants(custom_type))
 
-  let clause = fn(i, name) {
+  let clause = fn(name, i) {
     code.Clause(code.Constructor(name, []), code.Int(i))
   }
 
@@ -57,23 +57,19 @@ pub fn generate_compare(src: String, type_name: String) -> Result(String, Error)
     body: [
       code.Let(
         "to_int",
-        code.Fn(
-          ["x"],
-          [
-            code.Expression(code.Case(
-              code.Variable("x"),
-              list.index_map(names, clause),
-            )),
-          ],
-        ),
+        code.Fn(["x"], [
+          code.Expression(code.Case(
+            code.Variable("x"),
+            list.index_map(names, clause),
+          )),
+        ]),
       ),
-      code.Expression(code.Call(
-        code.Variable("int.compare"),
-        [
+      code.Expression(
+        code.Call(code.Variable("int.compare"), [
           code.Call(code.Variable("to_int"), [code.Variable("a")]),
           code.Call(code.Variable("to_int"), [code.Variable("b")]),
-        ],
-      )),
+        ]),
+      ),
     ],
   )
   |> code.function_to_string
